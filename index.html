@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Supercat Jump</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            background: #cce7ff;
+            display: block;
+            margin: auto;
+        }
+
+        #score {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <h1><span>Supercat Jump</span> <img src="https://img.cryptorank.io/coins/superposition1719846962439.png"
+            style="width: 40px;" />
+    </h1>
+    <p id="score">Score: 0</p>
+    <canvas id="gameCanvas" width="800" height="300"></canvas>
+    <script>
+        let canvas = document.getElementById("gameCanvas");
+        let ctx = canvas.getContext("2d");
+
+        let catImg = new Image();
+        catImg.src = "https://img.cryptorank.io/coins/superposition1719846962439.png";
+
+        let cat = { x: 50, y: 200, width: 50, height: 50, velocityY: 0, jumping: false };
+        let obstacles = [{ x: 400, y: 230, width: 30, height: 30 }];
+        let gravity = 0.5;
+        let jumpPower = -10;
+        let score = 0;
+
+        function drawCat() {
+            ctx.drawImage(catImg, cat.x, cat.y, cat.width, cat.height);
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = "red";
+            obstacles.forEach(obs => ctx.fillRect(obs.x, obs.y, obs.width, obs.height));
+        }
+
+        function checkCollision(cat, obs) {
+            return (
+                cat.x < obs.x + obs.width &&
+                cat.x + cat.width > obs.x &&
+                cat.y < obs.y + obs.height &&
+                cat.y + cat.height > obs.y
+            );
+        }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space" && !cat.jumping) {
+                cat.velocityY = jumpPower;
+                cat.jumping = true;
+            }
+            if (event.code === "Enter" && gameOver) {
+                restartGame(); // Restart when "Enter" is pressed
+            }
+        });
+
+        let gameOver = false;
+
+        function restartGame() {
+            score = 0;
+            cat.y = 200;
+            obstacles = [{ x: 400, y: 230, width: 30, height: 30 }];
+            gameOver = false;
+            document.getElementById("score").innerText = `Score: ${score}`;
+            update();
+        }
+
+        function getRandomColor() {
+            const colors = ["red", "blue", "green", "purple", "orange", "pink"];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function update() {
+            cat.velocityY += gravity;
+            cat.y += cat.velocityY;
+
+            if (cat.y > 200) {
+                cat.y = 200;
+                cat.jumping = false;
+            }
+
+            obstacles.forEach(obs => obs.x -= 5);
+            obstacles = obstacles.filter(obs => obs.x > -30);
+
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < 500) {
+                obstacles.push({ x: 800, y: 230, width: 30, height: 30, color: getRandomColor() });
+                score++;
+                document.getElementById("score").innerText = `Score: ${score}`;
+            }
+
+            for (let obs of obstacles) {
+                if (checkCollision(cat, obs)) {
+                    gameOver = true;
+                    alert(`Game Over! Final Score: ${score} 🐱💥\nPress Enter to Restart.`);
+                    return;
+                }
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCat();
+            drawObstacles();
+            requestAnimationFrame(update);
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(obs => {
+                ctx.fillStyle = obs.color;
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            });
+        }
+
+
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space" && !cat.jumping) {
+                cat.velocityY = jumpPower;
+                cat.jumping = true;
+            }
+        });
+
+        update();
+    </script>
+</body>
+
+</html>
